@@ -1,0 +1,80 @@
+# =====================================================================
+# in.cu_generate — генерування конфігурацій ГЦК-міді для бенчмарку SOAP-ANN
+# (стаття 2). МД у LAMMPS з потенціалом Мішина; знімки -> LAMMPS dump.
+# Далі: python bench_descriptor_ann.py --lammps_dumps "dump_*.lammpstrj" --n_jobs -1
+#
+# Запуск:  lmp -in in.cu_generate     (або lmp_serial / lmp_mpi за вашою збіркою)
+# Покладіть поруч файл потенціалу Cu01.eam.alloy (NIST IPR).
+# =====================================================================
+
+units           metal
+atom_style      atomic
+boundary        p p p
+
+# --- ГЦК-мідь, суперкомірка 10x10x10 (~4000 атомів) ---
+variable        a equal 3.615
+lattice         fcc ${a}
+region          box block 0 10 0 10 0 10
+create_box      1 box
+create_atoms    1 box
+mass            1 63.546
+
+pair_style      eam/alloy
+pair_coeff      * * Cu01.eam.alloy Cu
+
+# --- параметри відбору (узгоджено з §5; знімків на стан = 15) ---
+variable        nsnap  equal 15
+variable        every  equal 200
+variable        nrun   equal v_every*v_nsnap
+timestep        0.002            # пс  (= 2 фс)
+thermo          500
+
+# =====================================================================
+# 1) КРИСТАЛ за діапазону температур {300,500,700,900,1100,1300} K
+# =====================================================================
+variable        T index 300 500 700 900 1100 1300
+label           loop_T
+    velocity    all create ${T} 12345 mom yes rot yes dist gaussian
+    fix         f1 all nvt temp ${T} ${T} 0.1
+    run         2000                       # врівноваження
+    reset_timestep 0
+    dump        d1 all custom ${every} dump_T${T}.lammpstrj id type x y z
+    dump_modify d1 sort id
+    run         ${nrun}                     # відбір nsnap знімків
+    undump      d1
+    unfix       f1
+next            T
+jump            SELF loop_T
+
+# =====================================================================
+# 2) РОЗПЛАВ (свіжий кристал -> 2000 K, гарантовано вище Tпл)
+# =====================================================================
+delete_atoms    group all
+create_atoms    1 box
+velocity        all create 2000 23456 mom yes rot yes dist gaussian
+fix             fm all nvt temp 2000 2000 0.1
+run             4000                        # плавлення/врівноваження
+reset_timestep  0
+dump            dm all custom ${every} dump_melt.lammpstrj id type x y z
+dump_modify     dm sort id
+run             ${nrun}
+undump          dm
+unfix           fm
+
+# =====================================================================
+# 3) ВАКАНСІЯ (свіжий кристал, прибрано 1 атом, 300 K)
+# =====================================================================
+delete_atoms    group all
+create_atoms    1 box
+delete_atoms    random count 1 no all NULL 34567
+velocity        all create 300 45678 mom yes rot yes dist gaussian
+fix             fv all nvt temp 300 300 0.1
+run             2000
+reset_timestep  0
+dump            dv all custom ${every} dump_vac.lammpstrj id type x y z
+dump_modify     dv sort id
+run             ${nrun}
+undump          dv
+unfix           fv
+
+print           "ГОТОВО: dump_T*.lammpstrj, dump_melt.lammpstrj, dump_vac.lammpstrj"

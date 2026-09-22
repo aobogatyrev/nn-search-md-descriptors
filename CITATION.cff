@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the article."
+title: "Nearest-neighbour search in the space of atomic-environment descriptors — code and results"
+authors:
+  - family-names: Bogatyrev
+    given-names: Oleksandr O.
+    orcid: "https://orcid.org/0000-0002-2590-6023"
+    affiliation: "Bohdan Khmelnytsky National University at Cherkasy"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Algorithms and data structures for nearest neighbour search in molecular dynamics: approximate methods in the space of atomic-environment descriptors"
+  authors:
+    - family-names: Bogatyrev
+      given-names: Oleksandr O.
+  journal: "Visnyk of Cherkasy University. Series Physical and Mathematical Sciences"
+  year: 2026
+  notes: "Submitted. Part 2 of a cycle; Part 1: https://doi.org/10.31651/2076-5851-2025-199-210"

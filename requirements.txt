@@ -1,0 +1,10 @@
+# Versions used for the measurements in the paper (Python 3.9.6, macOS 26.5.1, Apple M1 Max)
+numpy==2.0.2
+scipy==1.13.1
+scikit-learn==1.6.1
+ase==3.26.0
+dscribe==2.1.2
+hnswlib==0.8.0
+faiss-cpu==1.13.0
+matplotlib>=3.7
+# LAMMPS is a separate binary (used: 22 Jul 2025, update 4) — see README.

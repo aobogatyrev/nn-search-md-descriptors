@@ -1,0 +1,270 @@
+{
+  "meta": {
+    "N": 511984,
+    "D": 252,
+    "n_db": 501984,
+    "n_queries": 10000,
+    "source": "cache",
+    "params": {
+      "k": 10,
+      "r_cut": 5.5,
+      "n_max": 8,
+      "l_max": 6,
+      "sigma": 0.5,
+      "supercell": [
+        10,
+        10,
+        10
+      ],
+      "temperatures": [
+        300,
+        500,
+        700,
+        900,
+        1100,
+        1300
+      ],
+      "melt_T": 2000,
+      "n_snapshots": 16,
+      "hnsw_M": 16,
+      "hnsw_efC": 200,
+      "hnsw_efSearch": [
+        10,
+        20,
+        40,
+        80,
+        160,
+        320,
+        640
+      ],
+      "lsh_nbits": [
+        64,
+        128,
+        256,
+        512,
+        1024,
+        2048
+      ]
+    },
+    "benchmark_conditions": {
+      "ground_truth": "exact k-NN, float64, direct ||q-x||^2, deterministic tie-break by (distance, index); NOT timed",
+      "timed_exact_search": "FAISS IndexFlatL2 float32 (fallback: sklearn brute); its own recall vs float64 ground truth is reported",
+      "dtype": {
+        "balltree": "float64 (scikit-learn)",
+        "hnsw": "float32 (hnswlib)",
+        "lsh": "float32 (FAISS IndexLSH, binary sign-of-projection)",
+        "brute": "float32"
+      },
+      "threads": 10,
+      "threads_note": "BLAS/FAISS/hnswlib pinned via env + explicit API; scikit-learn Ball-Tree is single-threaded by design",
+      "batch": "all queries in one batch call per method",
+      "timing": "time.perf_counter over the whole query batch; median of 3 repeats; warm-up batch of 256 queries before timing; excludes index build and any format conversion",
+      "memory": "STRUCTURAL ESTIMATE from data layout (not measured RSS): BallTree=N*D*8; HNSW=N*(D*4+2*M*4); LSH=N*nbits/8+D*nbits*4",
+      "recall": {
+        "recall_at_k": "tie-aware: neighbour counts if true dist <= d_k*(1+1e-2)+1e-6 (ann-benchmarks convention)",
+        "recall_strict": "|I ∩ I_true|/k vs deterministic ground truth",
+        "rel_dist_err": "excess distance: mean(returned dists)/mean(true dists) - 1"
+      },
+      "split": "random",
+      "holdout": null,
+      "balltree_leaf_size": 40
+    }
+  },
+  "results": [
+    {
+      "method": "BallTree(sklearn)",
+      "param": "exact",
+      "dtype": "float64",
+      "recall_at_k": 1.0,
+      "recall_strict": 1.0,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 0.0,
+      "qps": 54.24719396743374,
+      "build_s": 6.898656750000001,
+      "mem_mb": 1011.999744,
+      "threads": 1
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=64",
+      "dtype": "float32",
+      "recall_at_k": 0.00027,
+      "recall_strict": 0.00026,
+      "recall_at_1": 0.0001,
+      "rel_dist_err": 6.639945968145797,
+      "qps": 5958.247283059939,
+      "build_s": 0.02613999999994121,
+      "mem_mb": 4.080384,
+      "threads": 10
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=128",
+      "dtype": "float32",
+      "recall_at_k": 0.00136,
+      "recall_strict": 0.00127,
+      "recall_at_1": 0.0002,
+      "rel_dist_err": 4.780108786658072,
+      "qps": 6209.842369895392,
+      "build_s": 0.09045604200002799,
+      "mem_mb": 8.160768,
+      "threads": 10
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=256",
+      "dtype": "float32",
+      "recall_at_k": 0.00192,
+      "recall_strict": 0.00186,
+      "recall_at_1": 0.0004,
+      "rel_dist_err": 5.139768871703874,
+      "qps": 6069.434943915512,
+      "build_s": 0.07845841599998948,
+      "mem_mb": 16.321536,
+      "threads": 10
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=512",
+      "dtype": "float32",
+      "recall_at_k": 0.00771,
+      "recall_strict": 0.00725,
+      "recall_at_1": 0.0016,
+      "rel_dist_err": 3.0011343818880603,
+      "qps": 5241.705069084188,
+      "build_s": 0.45599879200005944,
+      "mem_mb": 32.643072,
+      "threads": 10
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=1024",
+      "dtype": "float32",
+      "recall_at_k": 0.03349,
+      "recall_strict": 0.03146,
+      "recall_at_1": 0.0086,
+      "rel_dist_err": 1.5319067097010568,
+      "qps": 2318.2230362717123,
+      "build_s": 0.6965245420000201,
+      "mem_mb": 65.286144,
+      "threads": 10
+    },
+    {
+      "method": "LSH(FAISS)",
+      "param": "nbits=2048",
+      "dtype": "float32",
+      "recall_at_k": 0.09829,
+      "recall_strict": 0.09256,
+      "recall_at_1": 0.0346,
+      "rel_dist_err": 0.7523140243320456,
+      "qps": 1340.022360111599,
+      "build_s": 0.8517410839999684,
+      "mem_mb": 130.572288,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=10",
+      "dtype": "float32",
+      "recall_at_k": 0.98254,
+      "recall_strict": 0.9588,
+      "recall_at_1": 0.992,
+      "rel_dist_err": 0.002099328020563007,
+      "qps": 112149.16628636418,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=20",
+      "dtype": "float32",
+      "recall_at_k": 0.99815,
+      "recall_strict": 0.99393,
+      "recall_at_1": 0.9996,
+      "rel_dist_err": 0.0002419195046150513,
+      "qps": 79023.55836095539,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=40",
+      "dtype": "float32",
+      "recall_at_k": 0.99991,
+      "recall_strict": 0.9995,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 1.5144856995830125e-05,
+      "qps": 53079.9415821463,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=80",
+      "dtype": "float32",
+      "recall_at_k": 0.99999,
+      "recall_strict": 0.99998,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 7.55414656383735e-07,
+      "qps": 33454.95603809752,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=160",
+      "dtype": "float32",
+      "recall_at_k": 1.0,
+      "recall_strict": 1.0,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 0.0,
+      "qps": 20764.874138909,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=320",
+      "dtype": "float32",
+      "recall_at_k": 1.0,
+      "recall_strict": 1.0,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 0.0,
+      "qps": 12850.383784742,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "HNSW(hnswlib)",
+      "param": "efSearch=640",
+      "dtype": "float32",
+      "recall_at_k": 1.0,
+      "recall_strict": 1.0,
+      "recall_at_1": 1.0,
+      "rel_dist_err": 0.0,
+      "qps": 7473.216926555173,
+      "build_s": 31.98759958300002,
+      "mem_mb": 570.253824,
+      "threads": 10
+    },
+    {
+      "method": "Exact(brute)",
+      "param": "faiss.IndexFlatL2 (float32)",
+      "dtype": "float32",
+      "recall_at_k": 0.97306,
+      "recall_strict": 0.94326,
+      "recall_at_1": 0.9253,
+      "rel_dist_err": 0.001397589579592573,
+      "qps": 4032.8670599653096,
+      "build_s": 0.0,
+      "mem_mb": null,
+      "threads": 10
+    }
+  ]
+}
