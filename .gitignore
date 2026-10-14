@@ -6,3 +6,4 @@ soap_descriptors.npy
 soap_descriptors_labels.npy
 soap_n*_l*.npy
 Cu01.eam.alloy
+.DS_Store
